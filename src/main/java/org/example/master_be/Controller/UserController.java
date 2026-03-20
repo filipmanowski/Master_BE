@@ -5,7 +5,10 @@ import org.example.master_be.DTO.LoginRequest;
 import org.example.master_be.DTO.RegisterRequest;
 import org.example.master_be.Model.User;
 import org.example.master_be.Service.UserService;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.Map;
 
 @RestController
 @RequestMapping("/api/users")
@@ -28,16 +31,18 @@ public class UserController {
 
     // LOGOWANIE
     @PostMapping("/auth/login")
-    public String login(@RequestBody LoginRequest request) {
+    public ResponseEntity<?> login(@RequestBody LoginRequest request) {
 
-        boolean success = userService.login(request.getEmail(),
+        boolean success = userService.login(
+                request.getEmail(),
                 request.getPassword()
         );
 
         if (success) {
-            return "Login OK";
+            return ResponseEntity.ok().body(Map.of("message", "Login OK"));
         } else {
-            return "Wrong password";
+            return ResponseEntity.status(401)
+                    .body(Map.of("message", "Wrong credentials"));
         }
     }
 }

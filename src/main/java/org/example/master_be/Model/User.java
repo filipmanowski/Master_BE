@@ -6,7 +6,6 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 import java.sql.Timestamp;
-import java.time.Instant;
 
 @Setter
 @Getter
@@ -34,16 +33,13 @@ public class User {
     @Column(name = "role", nullable = false)
     private String role;
 
+    @OneToOne(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
+    private Person person;
+
     public User(String email, String password) {
         this.email = email;
         this.password = password;
         this.enabled = true;
         this.role = "USER";
     }
-//    public User(String email, String password, String role) {
-//        this.email = email;
-//        this.password = password;
-//        this.enabled = true;
-//        this.role = role;
-//    }
 }

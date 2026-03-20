@@ -33,9 +33,8 @@ public class UserService {
     // LOGOWANIE
     public boolean login(String email, String password) {
 
-        User user = userRepository.findByEmail(email)
-                .orElseThrow(() -> new RuntimeException("User not found"));
-
-        return passwordEncoder.matches(password, user.getPassword());
+        return userRepository.findByEmail(email)
+                .map(user -> passwordEncoder.matches(password, user.getPassword()))
+                .orElse(false);
     }
 }
