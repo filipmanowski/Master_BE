@@ -1,6 +1,7 @@
 package org.example.master_be.Controller;
 
 
+import org.example.master_be.DTO.LoginRequest;
 import org.example.master_be.DTO.RegisterRequest;
 import org.example.master_be.Model.User;
 import org.example.master_be.Service.UserService;
@@ -27,10 +28,11 @@ public class UserController {
 
     // LOGOWANIE
     @PostMapping("/auth/login")
-    public String login(@RequestParam String email,
-                        @RequestParam String password) {
+    public String login(@RequestBody LoginRequest request) {
 
-        boolean success = userService.login(email, password);
+        boolean success = userService.login(request.getEmail(),
+                request.getPassword()
+        );
 
         if (success) {
             return "Login OK";

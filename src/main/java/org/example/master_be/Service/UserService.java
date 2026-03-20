@@ -18,22 +18,22 @@ public class UserService {
     }
 
     // REJESTRACJA
-    public User register(String login, String password) {
+    public User register(String email, String password) {
 
-        if (userRepository.findByLogin(login).isPresent()) {
+        if (userRepository.findByEmail(email).isPresent()) {
             throw new RuntimeException("User already exists");
         }
 
         String hashedPassword = passwordEncoder.encode(password);
 
-        User user = new User(login, hashedPassword);
+        User user = new User(email, hashedPassword);
         return userRepository.save(user);
     }
 
     // LOGOWANIE
-    public boolean login(String login, String password) {
+    public boolean login(String email, String password) {
 
-        User user = userRepository.findByLogin(login)
+        User user = userRepository.findByEmail(email)
                 .orElseThrow(() -> new RuntimeException("User not found"));
 
         return passwordEncoder.matches(password, user.getPassword());

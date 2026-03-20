@@ -5,6 +5,9 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
+import java.sql.Timestamp;
+import java.time.Instant;
+
 @Setter
 @Getter
 @NoArgsConstructor
@@ -17,13 +20,30 @@ public class User {
     private Long id;
 
     @Column(name = "email", nullable = false, unique = true)
-    private String login;
+    private String email;
 
     @Column(name = "password", nullable = false)
     private String password;
 
-    public User(String login, String password) {
-        this.login = login;
+    @Column(name = "created_at")
+    private Timestamp createdAt;
+
+    @Column(name = "enabled", nullable = false)
+    private Boolean enabled;
+
+    @Column(name = "role", nullable = false)
+    private String role;
+
+    public User(String email, String password) {
+        this.email = email;
         this.password = password;
+        this.enabled = true;
+        this.role = "USER";
     }
+//    public User(String email, String password, String role) {
+//        this.email = email;
+//        this.password = password;
+//        this.enabled = true;
+//        this.role = role;
+//    }
 }
