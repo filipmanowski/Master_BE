@@ -2,6 +2,7 @@ package org.example.master_be.Service;
 
 import org.example.master_be.Model.User;
 import org.example.master_be.Repository.UserRepository;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -10,6 +11,7 @@ public class UserService {
 
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
+
 
     public UserService(UserRepository userRepository,
                        PasswordEncoder passwordEncoder) {
