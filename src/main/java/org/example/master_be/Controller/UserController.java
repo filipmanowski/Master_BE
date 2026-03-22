@@ -3,6 +3,7 @@ package org.example.master_be.Controller;
 
 import org.example.master_be.DTO.LoginRequest;
 import org.example.master_be.DTO.RegisterRequest;
+import org.example.master_be.DTO.UserResponse;
 import org.example.master_be.Model.User;
 import org.example.master_be.Service.UserService;
 import org.springframework.http.ResponseEntity;
@@ -33,16 +34,25 @@ public class UserController {
     @PostMapping("/auth/login")
     public ResponseEntity<?> login(@RequestBody LoginRequest request) {
 
-        boolean success = userService.login(
+        UserService.LoginResult result = userService.login(
                 request.getEmail(),
                 request.getPassword()
         );
 
-        if (success) {
-            return ResponseEntity.ok().body(Map.of("message", "Login OK"));
-        } else {
+        if (!result.success()) {
             return ResponseEntity.status(401)
                     .body(Map.of("message", "Wrong credentials"));
         }
+
+        User user = result.user();
+
+        UserResponse response = new UserResponse(
+                user.getId(),
+                user.getEmail(),
+                user.getEnabled(),
+                user.getRole()
+        );
+
+        return ResponseEntity.ok(response);
     }
 }

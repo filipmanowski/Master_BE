@@ -6,6 +6,7 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 import java.sql.Timestamp;
+import java.time.Instant;
 
 @Setter
 @Getter
@@ -13,6 +14,7 @@ import java.sql.Timestamp;
 @Entity
 @Table(name = "users")
 public class User {
+
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -39,7 +41,8 @@ public class User {
     public User(String email, String password) {
         this.email = email;
         this.password = password;
-        this.enabled = true;
+        this.enabled = false;
         this.role = "USER";
+        createdAt = Timestamp.from(Instant.now());
     }
 }

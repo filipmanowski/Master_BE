@@ -11,8 +11,7 @@ public class UserService {
 
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
-
-
+    public record LoginResult(boolean success, User user) {}
     public UserService(UserRepository userRepository,
                        PasswordEncoder passwordEncoder) {
         this.userRepository = userRepository;
@@ -33,10 +32,14 @@ public class UserService {
     }
 
     // LOGOWANIE
-    public boolean login(String email, String password) {
-
+    public LoginResult login(String email, String password) {
         return userRepository.findByEmail(email)
-                .map(user -> passwordEncoder.matches(password, user.getPassword()))
-                .orElse(false);
+                .map(user -> {
+                    boolean passwordMatch = passwordEncoder.matches(password, user.getPassword());
+                    return passwordMatch
+                            ? new LoginResult(true, user)
+                            : new LoginResult(false, null);
+                })
+                .orElse(new LoginResult(false, null));
     }
 }
