@@ -35,8 +35,7 @@ public class User {
     @Column(name = "role", nullable = false)
     private String role;
 
-    @OneToOne(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
-    private Person person;
+
 
     public User(String email, String password) {
         this.email = email;
