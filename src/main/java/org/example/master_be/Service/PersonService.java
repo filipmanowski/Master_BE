@@ -6,6 +6,7 @@ import org.example.master_be.Model.User;
 import org.example.master_be.Repository.PersonRepository;
 import org.example.master_be.Repository.UserRepository;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
 public class PersonService {
@@ -19,30 +20,15 @@ public class PersonService {
         this.userRepository = userRepository;
     }
 
+    @Transactional
     public Person createPerson(PersonRequest request) {
 
-        System.out.println("===== PERSON REQUEST DEBUG =====");
-        System.out.println("Received: " + request);
-
-        System.out.println("userId: " + request.getUserId());
-        System.out.println("gender: " + request.getGender());
-        System.out.println("age: " + request.getAge());
-        System.out.println("weight: " + request.getWeight());
-        System.out.println("height: " + request.getHeight());
-        System.out.println("activityLevel: " + request.getActivityLevel());
-        System.out.println("sleepHours: " + request.getSleepHours());
-        System.out.println("waistCircumference: " + request.getWaistCircumference());
-        System.out.println("hipsCircumference: " + request.getHipsCircumference());
-        System.out.println("thighCircumference: " + request.getThighCircumference());
-        System.out.println("bicepsCircumference: " + request.getBicepsCircumference());
-        System.out.println("chestCircumference: " + request.getChestCircumference());
-
-        System.out.println("================================");
+        // 🔥 ZAMIAST ID → bierzemy usera po emailu
+        // (na razie hardcode do testu — zmienimy później na auth)
         User user = userRepository.findById(request.getUserId())
                 .orElseThrow(() -> new RuntimeException("User not found"));
 
-
-        // 🔒 zabezpieczenie: 1 user = 1 person
+        // 🔒 1 user = 1 person
         if (personRepository.findByUserId(user.getId()).isPresent()) {
             throw new RuntimeException("Person already exists for this user");
         }
@@ -61,12 +47,7 @@ public class PersonService {
         person.setBicepsCircumference(request.getBicepsCircumference());
         person.setChestCircumference(request.getChestCircumference());
 
-        Person saved = personRepository.save(person);
-
-        user.setEnabled(true);
-        userRepository.save(user);
-
-        return saved;
+        return personRepository.save(person);
     }
 
     private String mapGender(String gender) {

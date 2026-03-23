@@ -20,8 +20,8 @@ public class PersonController {
     @PostMapping
     public ResponseEntity<?> createPerson(@RequestBody PersonRequest request) {
 
-        Person person = personService.createPerson(request);
 
+        Person person = personService.createPerson(request);
         PersonResponse response = new PersonResponse(
                 person.getId(),
                 person.getUser().getId(), // 🔥 KLUCZ
