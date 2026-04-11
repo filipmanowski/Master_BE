@@ -47,7 +47,13 @@ public class PersonService {
         person.setBicepsCircumference(request.getBicepsCircumference());
         person.setChestCircumference(request.getChestCircumference());
 
-        return personRepository.save(person);
+        personRepository.save(person);
+
+        // ✅ Ustawiamy enabled = true na user'ze
+        user.setEnabled(true);
+        userRepository.save(user);
+
+        return person;
     }
 
     private String mapGender(String gender) {
