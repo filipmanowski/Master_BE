@@ -23,12 +23,10 @@ public class PersonService {
     @Transactional
     public Person createPerson(PersonRequest request) {
 
-        // 🔥 ZAMIAST ID → bierzemy usera po emailu
-        // (na razie hardcode do testu — zmienimy później na auth)
+
         User user = userRepository.findById(request.getUserId())
                 .orElseThrow(() -> new RuntimeException("User not found"));
 
-        // 🔒 1 user = 1 person
         if (personRepository.findByUserId(user.getId()).isPresent()) {
             throw new RuntimeException("Person already exists for this user");
         }
@@ -47,11 +45,13 @@ public class PersonService {
         person.setBicepsCircumference(request.getBicepsCircumference());
         person.setChestCircumference(request.getChestCircumference());
 
-        personRepository.save(person);
 
-        // ✅ Ustawiamy enabled = true na user'ze
+        System.out.println("user: " + user);
+
         user.setEnabled(true);
         userRepository.save(user);
+
+        personRepository.save(person);
 
         return person;
     }
