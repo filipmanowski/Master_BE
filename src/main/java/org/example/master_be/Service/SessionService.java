@@ -2,7 +2,7 @@ package org.example.master_be.Service;
 
 import lombok.RequiredArgsConstructor;
 import org.example.master_be.DTO.SaveExerciseRequest;
-import org.example.master_be.Model.SessionExercise;
+import org.example.master_be.Model.PerformedExercise;
 import org.example.master_be.Model.WorkoutSession;
 import org.example.master_be.Repository.*;
 import org.springframework.stereotype.Service;
@@ -13,10 +13,10 @@ import org.springframework.stereotype.Service;
 public class SessionService {
 
     private final WorkoutSessionRepository sessionRepo;
-    private final SessionExerciseRepository sessionExerciseRepo;
+    private final PerformedExerciseRepository sessionExerciseRepo;
     private final UserRepository userRepo;
     private final WorkoutPlanRepository planRepo;
-    private final UserExerciseRepository exerciseRepo;
+    private final ExerciseRepository exerciseRepo;
 
     public WorkoutSession startSession(Long userId, Long planId) {
         var session = new WorkoutSession();
@@ -27,8 +27,8 @@ public class SessionService {
         return sessionRepo.save(session);
     }
 
-    public SessionExercise saveExercise(SaveExerciseRequest req) {
-        SessionExercise se = new SessionExercise();
+    public PerformedExercise saveExercise(SaveExerciseRequest req) {
+        PerformedExercise se = new PerformedExercise();
 
         se.setSession(sessionRepo.findById(req.getSessionId()).orElseThrow());
         se.setExercise(exerciseRepo.findById(req.getExerciseId()).orElseThrow());

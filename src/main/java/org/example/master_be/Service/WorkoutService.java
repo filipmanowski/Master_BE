@@ -14,7 +14,7 @@ public class WorkoutService {
 
     private final WorkoutPlanRepository planRepo;
     private final PlanExerciseRepository planExerciseRepo;
-    private final UserExerciseRepository exerciseRepo;
+    private final ExerciseRepository exerciseRepo;
 
     public WorkoutPlan createPlan(WorkoutPlan plan) {
         return planRepo.save(plan);

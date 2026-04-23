@@ -1,7 +1,7 @@
 package org.example.master_be.Controller;
 
 import lombok.RequiredArgsConstructor;
-import org.example.master_be.Model.SessionExercise;
+import org.example.master_be.Model.PerformedExercise;
 import org.example.master_be.Model.WorkoutSession;
 import org.example.master_be.Service.SessionService;
 import org.springframework.web.bind.annotation.*;
@@ -21,7 +21,7 @@ public class SessionController {
     }
 
     @PostMapping("/exercise")
-    public SessionExercise saveExercise(@RequestBody SaveExerciseRequest req) {
+    public PerformedExercise saveExercise(@RequestBody SaveExerciseRequest req) {
         return service.saveExercise(req);
     }
 

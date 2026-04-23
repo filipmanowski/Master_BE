@@ -8,7 +8,7 @@ import lombok.Setter;
 @Getter
 @Entity
 @Table(name = "plan_exercises")
-public class PlanExercise {
+public class PlanExercise { //exercise on the schedule , have reps sets etc.
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -27,6 +27,6 @@ public class PlanExercise {
 
     @ManyToOne
     @JoinColumn(name = "exercise_id")
-    private UserExercise exercise;
+    private Exercise exercise;
 
 }
