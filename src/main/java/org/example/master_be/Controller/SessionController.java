@@ -1,6 +1,7 @@
 package org.example.master_be.Controller;
 
 import lombok.RequiredArgsConstructor;
+import org.example.master_be.Config.AuthUtil;
 import org.example.master_be.Model.PerformedExercise;
 import org.example.master_be.Model.WorkoutSession;
 import org.example.master_be.Service.SessionService;
@@ -14,10 +15,12 @@ import org.example.master_be.DTO.SaveExerciseRequest;
 public class SessionController {
 
     private final SessionService service;
+    private final AuthUtil authUtil;
 
     @PostMapping("/start")
     public WorkoutSession start(@RequestBody StartSessionRequest req) {
-        return service.startSession(req.getUserId(), req.getPlanId());
+        Long userId = authUtil.getCurrentUserId();
+        return service.startSession(userId, req.getPlanId());
     }
 
     @PostMapping("/exercise")

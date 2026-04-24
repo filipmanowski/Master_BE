@@ -33,7 +33,12 @@ public class WorkoutService {
     }
 
 
-    public List<PlanExerciseResponse> getPlanExercisesDto(Long planId) {
+    public List<PlanExerciseResponse> getPlanExercisesDto(Long planId, Long userId) {
+        // ← DODAJ userId do parametrów
+        // Weryfikuj czy plan należy do tego użytkownika
+        planRepo.findByIdAndUserId(planId, userId)
+                .orElseThrow(() -> new RuntimeException("Plan not found or unauthorized"));
+
         return planExerciseRepo.findByPlanId(planId)
                 .stream()
                 .map(this::mapToDto)

@@ -1,6 +1,7 @@
 package org.example.master_be.Controller;
 
 import lombok.RequiredArgsConstructor;
+import org.example.master_be.Config.AuthUtil;
 import org.example.master_be.DTO.PlanExerciseResponse;
 import org.example.master_be.Model.*;
 import org.example.master_be.Service.WorkoutService;
@@ -14,14 +15,20 @@ import java.util.List;
 public class WorkoutController {
 
     private final WorkoutService service;
+    private final AuthUtil authUtil;
 
     @PostMapping("/plan")
     public WorkoutPlan createPlan(@RequestBody WorkoutPlan plan) {
+        Long userId = authUtil.getCurrentUserId();
+        User user = new User();
+        user.setId(userId);
+        plan.setUser(user);
         return service.createPlan(plan);
     }
 
-    @GetMapping("/plans/{userId}")
-    public List<WorkoutPlan> getPlans(@PathVariable Long userId) {
+    @GetMapping("/plans")
+    public List<WorkoutPlan> getPlans() {
+        Long userId = authUtil.getCurrentUserId();
         return service.getUserPlans(userId);
     }
 
@@ -32,6 +39,7 @@ public class WorkoutController {
 
     @GetMapping("/plan/{planId}")
     public List<PlanExerciseResponse> getPlanExercises(@PathVariable Long planId) {
-        return service.getPlanExercisesDto(planId);
+        Long userId = authUtil.getCurrentUserId();
+        return service.getPlanExercisesDto(planId, userId);  // ← DODAJ userId
     }
 }

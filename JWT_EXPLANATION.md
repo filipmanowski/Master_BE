@@ -230,7 +230,123 @@ To rozwiązanie ma kilka zalet:
 
 W praktyce JWT w tym projekcie jest „przepustką” do chronionych endpointów.
 
-## 13. Podsumowanie
+## 13. Fragmenty kodu z projektu (z odnośnikami)
+
+Poniżej są krótkie, realne fragmenty z Twojego projektu, które pokazują użycie JWT end-to-end.
+
+### 13.1 Generowanie tokenu
+
+Źródło: `src/main/java/org/example/master_be/Config/JwtService.java`
+
+```java
+public String generateToken(Map<String, Object> extraClaims, UserDetails userDetails) {
+    Date now = new Date();
+    Date expiryDate = new Date(now.getTime() + jwtExpirationMs);
+
+    return Jwts.builder()
+            .claims(extraClaims)
+            .subject(userDetails.getUsername())
+            .issuedAt(now)
+            .expiration(expiryDate)
+            .signWith(getSigningKey())
+            .compact();
+}
+```
+
+Opis: tu tworzysz JWT. `subject` to email użytkownika, `expiration` ustawia ważność tokenu, a `signWith(...)` podpisuje token sekretem.
+
+### 13.2 Logowanie i zwrot JWT do frontendu
+
+Źródło: `src/main/java/org/example/master_be/Controller/UserController.java`
+
+```java
+User user = result.user();
+UserDetails userDetails = userDetailsService.loadUserByUsername(user.getEmail());
+String token = jwtService.generateToken(userDetails);
+
+boolean needsProfileCompletion = result.status() == UserService.LoginStatus.PROFILE_INCOMPLETE;
+
+AuthResponse response = new AuthResponse(
+        token,
+        user.getId(),
+        user.getEmail(),
+        user.getEnabled(),
+        user.getRole(),
+        needsProfileCompletion
+);
+```
+
+Opis: po poprawnym logowaniu generujesz token i zwracasz go w `AuthResponse`. Frontend na podstawie `needsProfileCompletion` decyduje o ekranie ankiety lub dashboardzie.
+
+### 13.3 Logika statusu logowania (profil nieukończony)
+
+Źródło: `src/main/java/org/example/master_be/Service/UserService.java`
+
+```java
+if (!passwordMatch) {
+    return new LoginResult(LoginStatus.INVALID_CREDENTIALS, null);
+}
+if (!Boolean.TRUE.equals(user.getEnabled())) {
+    return new LoginResult(LoginStatus.PROFILE_INCOMPLETE, user);
+}
+return new LoginResult(LoginStatus.SUCCESS, user);
+```
+
+Opis: błędne dane zwracają `INVALID_CREDENTIALS`, ale brak uzupełnionego profilu nie blokuje już loginu — backend zwraca użytkownika i status `PROFILE_INCOMPLETE`.
+
+### 13.4 Walidacja tokenu w filtrze
+
+Źródło: `src/main/java/org/example/master_be/Config/JwtAuthenticationFilter.java`
+
+```java
+final String authHeader = request.getHeader("Authorization");
+if (authHeader == null || !authHeader.startsWith("Bearer ")) {
+    filterChain.doFilter(request, response);
+    return;
+}
+
+String jwt = authHeader.substring(7);
+String username = jwtService.extractUsername(jwt);
+UserDetails userDetails = userDetailsService.loadUserByUsername(username);
+
+if (jwtService.isTokenValid(jwt, userDetails)) {
+    UsernamePasswordAuthenticationToken authToken = new UsernamePasswordAuthenticationToken(
+            userDetails, null, userDetails.getAuthorities());
+    SecurityContextHolder.getContext().setAuthentication(authToken);
+}
+```
+
+Opis: filtr wyciąga token z nagłówka, sprawdza jego poprawność i ustawia zalogowanego użytkownika w `SecurityContextHolder`.
+
+### 13.5 Wpięcie JWT do Spring Security
+
+Źródło: `src/main/java/org/example/master_be/Config/SecurityConfig.java`
+
+```java
+http
+        .csrf(AbstractHttpConfigurer::disable)
+        .authorizeHttpRequests(auth -> auth
+                .requestMatchers("/api/users/auth/**").permitAll()
+                .anyRequest().authenticated()
+        )
+        .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+        .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
+```
+
+Opis: endpointy auth są publiczne, reszta wymaga JWT, sesje są wyłączone (`STATELESS`), a filtr JWT działa przed standardową autoryzacją.
+
+### 13.6 Konfiguracja sekretu i czasu życia tokenu
+
+Źródło: `src/main/resources/application.properties`
+
+```properties
+jwt.secret=${JWT_SECRET:VGhpc0lzQVN1cGVyU2VjdXJlSldUU2VjcmV0S2V5VGhhdElzQXRMZWFzdDMyQnl0ZXM=}
+jwt.expiration-ms=${JWT_EXPIRATION_MS:86400000}
+```
+
+Opis: sekret i TTL tokenu bierzesz ze zmiennych środowiskowych; jeśli ich nie ma, używane są wartości domyślne.
+
+## 14. Podsumowanie
 
 W skrócie:
 
