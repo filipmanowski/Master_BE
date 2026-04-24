@@ -1,11 +1,14 @@
 package org.example.master_be.Controller;
 
 
+import org.example.master_be.Config.JwtService;
+import org.example.master_be.DTO.AuthResponse;
 import org.example.master_be.DTO.LoginRequest;
 import org.example.master_be.DTO.RegisterRequest;
-import org.example.master_be.DTO.UserResponse;
 import org.example.master_be.Model.User;
 import org.example.master_be.Service.UserService;
+import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -16,9 +19,15 @@ import java.util.Map;
 public class UserController {
 
     private final UserService userService;
+    private final JwtService jwtService;
+    private final UserDetailsService userDetailsService;
 
-    public UserController(UserService userService) {
+    public UserController(UserService userService,
+                          JwtService jwtService,
+                          UserDetailsService userDetailsService) {
         this.userService = userService;
+        this.jwtService = jwtService;
+        this.userDetailsService = userDetailsService;
     }
 
     // REJESTRACJA
@@ -39,18 +48,24 @@ public class UserController {
                 request.getPassword()
         );
 
-        if (!result.success()) {
+        if (result.status() == UserService.LoginStatus.INVALID_CREDENTIALS) {
             return ResponseEntity.status(401)
                     .body(Map.of("message", "Wrong credentials"));
         }
 
         User user = result.user();
+        UserDetails userDetails = userDetailsService.loadUserByUsername(user.getEmail());
+        String token = jwtService.generateToken(userDetails);
 
-        UserResponse response = new UserResponse(
+        boolean needsProfileCompletion = result.status() == UserService.LoginStatus.PROFILE_INCOMPLETE;
+
+        AuthResponse response = new AuthResponse(
+                token,
                 user.getId(),
                 user.getEmail(),
                 user.getEnabled(),
-                user.getRole()
+                user.getRole(),
+                needsProfileCompletion
         );
 
         return ResponseEntity.ok(response);

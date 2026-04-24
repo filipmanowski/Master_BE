@@ -11,7 +11,16 @@ public class UserService {
 
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
-    public record LoginResult(boolean success, User user) {}
+
+    public enum LoginStatus {
+        SUCCESS,
+        INVALID_CREDENTIALS,
+        PROFILE_INCOMPLETE
+    }
+
+    public record LoginResult(LoginStatus status, User user) {
+    }
+
     public UserService(UserRepository userRepository,
                        PasswordEncoder passwordEncoder) {
         this.userRepository = userRepository;
@@ -36,10 +45,14 @@ public class UserService {
         return userRepository.findByEmail(email)
                 .map(user -> {
                     boolean passwordMatch = passwordEncoder.matches(password, user.getPassword());
-                    return passwordMatch
-                            ? new LoginResult(true, user)
-                            : new LoginResult(false, null);
+                    if (!passwordMatch) {
+                        return new LoginResult(LoginStatus.INVALID_CREDENTIALS, null);
+                    }
+                    if (!Boolean.TRUE.equals(user.getEnabled())) {
+                        return new LoginResult(LoginStatus.PROFILE_INCOMPLETE, user);
+                    }
+                    return new LoginResult(LoginStatus.SUCCESS, user);
                 })
-                .orElse(new LoginResult(false, null));
+                .orElse(new LoginResult(LoginStatus.INVALID_CREDENTIALS, null));
     }
 }
