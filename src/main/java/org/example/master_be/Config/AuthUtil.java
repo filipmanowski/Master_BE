@@ -24,6 +24,8 @@ public class AuthUtil {
     /**
      * Pobiera email zalogowanego użytkownika
      */
+
+
     public String getCurrentUserEmail() {
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
 
