@@ -1,13 +1,12 @@
 package org.example.master_be.DTO;
 
 import lombok.Data;
+import org.example.master_be.Model.ExerciseType;
 
 @Data
-public class PlanExerciseResponse {
-    private Long id;
-    private Long exerciseId;
+public class PlanExerciseRequest {
     private String name;
-    private String type;
+    private ExerciseType type;
     private String description;
 
     private Integer sets;
