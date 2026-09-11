@@ -19,7 +19,6 @@ import org.springframework.web.server.ResponseStatusException;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
-import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
@@ -67,17 +66,60 @@ public class NutritionService {
                 .orElseThrow(() ->
                         new ResponseStatusException(HttpStatus.NOT_FOUND));
 
+        if (!entry.getUser().getId().equals(userId)) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN);
+        }
+
+        nutritionRepo.delete(entry);
+
         System.out.println("========= DELETE =========");
         System.out.println("entryId = " + entryId);
         System.out.println("entry.user.id = " + entry.getUser().getId());
         System.out.println("jwt.user.id = " + userId);
         System.out.println("==========================");
 
-        if (!entry.getUser().getId().equals(userId)) {
-            throw new ResponseStatusException(HttpStatus.FORBIDDEN);
-        }
 
-        nutritionRepo.delete(entry);
+    }
+
+    @Transactional
+    public NutritionEntryResponse editEntry(Long entryId, Long userId, NutritionEntryRequest request){
+
+        validate(request);
+
+        NutritionEntry entry = nutritionRepo.findById(entryId)
+            .orElseThrow(()-> new ResponseStatusException(HttpStatus.NOT_FOUND));
+
+    if(!entry.getUser().getId().equals(userId)){
+        throw new ResponseStatusException(HttpStatus.FORBIDDEN);
+    }
+
+    entry.setConsumedAt(
+            request.getConsumedAt() == null
+            ?entry.getConsumedAt()
+                    :request.getConsumedAt());
+
+    entry.setMealName(request.getMealName().trim());
+    entry.setDescription(request.getDescription());
+    entry.setCalories(request.getCalories());
+    entry.setProtein(request.getProtein());
+    entry.setCarbohydrates(request.getCarbohydrates());
+    entry.setFat(request.getFat());
+
+    entry.getMicronutrients().clear();
+
+    if (request.getMicronutrients() != null) {
+        for (MicronutrientRequest microRequest : request.getMicronutrients()) {
+            validateMicronutrient(microRequest);
+
+            NutritionMicronutrient micronutrient = new NutritionMicronutrient();
+            micronutrient.setNutritionEntry(entry);
+            micronutrient.setName(microRequest.getName().trim());
+            micronutrient.setAmount(microRequest.getAmount());
+            micronutrient.setUnit(microRequest.getUnit().trim());
+            entry.getMicronutrients().add(micronutrient);
+        }
+    }
+        return mapToDto(nutritionRepo.save(entry));
     }
 
     @Transactional(readOnly = true)

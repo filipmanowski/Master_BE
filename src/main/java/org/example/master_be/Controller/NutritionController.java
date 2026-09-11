@@ -41,4 +41,9 @@ public class NutritionController {
     public void deleteEntry(@PathVariable Long id) {
         service.deleteEntry(id, authUtil.getCurrentUserId());
     }
+
+    @PutMapping("/entries/{id}")
+    public void updatEntry(@PathVariable Long id, @RequestBody NutritionEntryRequest request){
+        service.editEntry(id,authUtil.getCurrentUserId(),request);
+    }
 }
