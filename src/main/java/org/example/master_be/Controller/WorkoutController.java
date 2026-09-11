@@ -5,7 +5,7 @@ import org.example.master_be.Config.AuthUtil;
 import org.example.master_be.DTO.PlanExerciseRequest;
 import org.example.master_be.DTO.PlanExerciseResponse;
 import org.example.master_be.DTO.WorkoutPlanRequest;
-import org.example.master_be.Model.WorkoutPlan;
+import org.example.master_be.DTO.WorkoutPlanResponse;
 import org.example.master_be.Service.WorkoutService;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -30,13 +30,13 @@ public class WorkoutController {
 
     @PostMapping("/plan")
     @ResponseStatus(HttpStatus.CREATED)
-    public WorkoutPlan createPlan(@RequestBody WorkoutPlanRequest plan) {
+    public WorkoutPlanResponse createPlan(@RequestBody WorkoutPlanRequest plan) {
         Long userId = authUtil.getCurrentUserId();
         return service.createPlan(userId, plan);
     }
 
     @GetMapping("/plans")
-    public List<WorkoutPlan> getPlans() {
+    public List<WorkoutPlanResponse> getPlans() {
         Long userId = authUtil.getCurrentUserId();
         return service.getUserPlans(userId);
     }
@@ -61,6 +61,13 @@ public class WorkoutController {
                                                @RequestBody PlanExerciseRequest request) {
         Long userId = authUtil.getCurrentUserId();
         return service.updatePlanExercise(planExerciseId, userId, request);
+    }
+
+    @DeleteMapping("/plan-exercise/{planExerciseId}")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    public void deleteExercise(@PathVariable Long planExerciseId) {
+        Long userId = authUtil.getCurrentUserId();
+        service.deletePlanExercise(planExerciseId, userId);
     }
 
     @GetMapping("/plan/{planId}")

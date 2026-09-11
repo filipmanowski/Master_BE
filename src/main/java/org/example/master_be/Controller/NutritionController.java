@@ -43,7 +43,7 @@ public class NutritionController {
     }
 
     @PutMapping("/entries/{id}")
-    public void updatEntry(@PathVariable Long id, @RequestBody NutritionEntryRequest request){
-        service.editEntry(id,authUtil.getCurrentUserId(),request);
+    public NutritionEntryResponse updateEntry(@PathVariable Long id, @RequestBody NutritionEntryRequest request){
+        return service.editEntry(id, authUtil.getCurrentUserId(), request);
     }
 }

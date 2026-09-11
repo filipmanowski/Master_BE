@@ -61,24 +61,9 @@ public class NutritionService {
 
     @Transactional
     public void deleteEntry(Long entryId, Long userId) {
-
-        NutritionEntry entry = nutritionRepo.findById(entryId)
-                .orElseThrow(() ->
-                        new ResponseStatusException(HttpStatus.NOT_FOUND));
-
-        if (!entry.getUser().getId().equals(userId)) {
-            throw new ResponseStatusException(HttpStatus.FORBIDDEN);
-        }
-
+        NutritionEntry entry = nutritionRepo.findByIdAndUserId(entryId, userId)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Meal not found"));
         nutritionRepo.delete(entry);
-
-        System.out.println("========= DELETE =========");
-        System.out.println("entryId = " + entryId);
-        System.out.println("entry.user.id = " + entry.getUser().getId());
-        System.out.println("jwt.user.id = " + userId);
-        System.out.println("==========================");
-
-
     }
 
     @Transactional
@@ -86,12 +71,8 @@ public class NutritionService {
 
         validate(request);
 
-        NutritionEntry entry = nutritionRepo.findById(entryId)
-            .orElseThrow(()-> new ResponseStatusException(HttpStatus.NOT_FOUND));
-
-    if(!entry.getUser().getId().equals(userId)){
-        throw new ResponseStatusException(HttpStatus.FORBIDDEN);
-    }
+        NutritionEntry entry = nutritionRepo.findByIdAndUserId(entryId, userId)
+            .orElseThrow(()-> new ResponseStatusException(HttpStatus.NOT_FOUND, "Meal not found"));
 
     entry.setConsumedAt(
             request.getConsumedAt() == null
@@ -99,7 +80,7 @@ public class NutritionService {
                     :request.getConsumedAt());
 
     entry.setMealName(request.getMealName().trim());
-    entry.setDescription(request.getDescription());
+    entry.setDescription(trimToNull(request.getDescription()));
     entry.setCalories(request.getCalories());
     entry.setProtein(request.getProtein());
     entry.setCarbohydrates(request.getCarbohydrates());

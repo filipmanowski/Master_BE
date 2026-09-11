@@ -4,6 +4,7 @@ import lombok.RequiredArgsConstructor;
 import org.example.master_be.DTO.PlanExerciseRequest;
 import org.example.master_be.DTO.PlanExerciseResponse;
 import org.example.master_be.DTO.WorkoutPlanRequest;
+import org.example.master_be.DTO.WorkoutPlanResponse;
 import org.example.master_be.Model.Exercise;
 import org.example.master_be.Model.PlanExercise;
 import org.example.master_be.Model.User;
@@ -12,6 +13,7 @@ import org.example.master_be.Repository.ExerciseRepository;
 import org.example.master_be.Repository.PlanExerciseRepository;
 import org.example.master_be.Repository.UserRepository;
 import org.example.master_be.Repository.WorkoutPlanRepository;
+import org.example.master_be.Repository.WorkoutSessionRepository;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -27,8 +29,9 @@ public class WorkoutService {
     private final PlanExerciseRepository planExerciseRepo;
     private final ExerciseRepository exerciseRepo;
     private final UserRepository userRepo;
+    private final WorkoutSessionRepository sessionRepo;
 
-    public WorkoutPlan createPlan(Long userId, WorkoutPlanRequest request) {
+    public WorkoutPlanResponse createPlan(Long userId, WorkoutPlanRequest request) {
         validatePlanRequest(request);
 
         User user = userRepo.findById(userId)
@@ -46,11 +49,13 @@ public class WorkoutService {
             plan.setParentPlan(parent);
         }
 
-        return planRepo.save(plan);
+        return mapPlan(planRepo.save(plan));
     }
 
-    public List<WorkoutPlan> getUserPlans(Long userId) {
-        return planRepo.findByUserId(userId);
+    public List<WorkoutPlanResponse> getUserPlans(Long userId) {
+        return planRepo.findByUserId(userId).stream()
+                .map(this::mapPlan)
+                .toList();
     }
 
     @Transactional
@@ -58,6 +63,7 @@ public class WorkoutService {
         WorkoutPlan plan = planRepo.findByIdAndUserId(planId, userId)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Plan not found"));
         planExerciseRepo.deleteByPlanId(plan.getId());
+        sessionRepo.clearPlanForUserSessions(plan.getId(), userId);
         planRepo.delete(plan);
     }
 
@@ -111,6 +117,13 @@ public class WorkoutService {
         return mapToDto(planExerciseRepo.save(planExercise));
     }
 
+    @Transactional
+    public void deletePlanExercise(Long planExerciseId, Long userId) {
+        PlanExercise planExercise = planExerciseRepo.findByIdAndPlanUserId(planExerciseId, userId)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Exercise not found in plan"));
+        planExerciseRepo.delete(planExercise);
+    }
+
     private PlanExerciseResponse mapToDto(PlanExercise pe) {
         PlanExerciseResponse dto = new PlanExerciseResponse();
 
@@ -126,6 +139,18 @@ public class WorkoutService {
         dto.setDuration(pe.getDuration());
         dto.setOrderIndex(pe.getOrderIndex());
 
+        return dto;
+    }
+
+    private WorkoutPlanResponse mapPlan(WorkoutPlan plan) {
+        WorkoutPlanResponse dto = new WorkoutPlanResponse();
+        dto.setId(plan.getId());
+        dto.setName(plan.getName());
+        dto.setDescription(plan.getDescription());
+        dto.setIsTemplate(plan.getIsTemplate());
+        if (plan.getParentPlan() != null) {
+            dto.setParentPlanId(plan.getParentPlan().getId());
+        }
         return dto;
     }
 

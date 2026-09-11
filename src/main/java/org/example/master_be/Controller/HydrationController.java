@@ -6,8 +6,10 @@ import org.example.master_be.DTO.HydrationEntryRequest;
 import org.example.master_be.DTO.HydrationEntryResponse;
 import org.example.master_be.DTO.HydrationSummaryResponse;
 import org.example.master_be.Service.HydrationService;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -55,5 +57,11 @@ public class HydrationController {
     @GetMapping("/average/month")
     public HydrationSummaryResponse getMonthAverage() {
         return service.getMonthAverage(authUtil.getCurrentUserId());
+    }
+
+    @DeleteMapping("/entries/{id}")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    public void deleteEntry(@PathVariable Long id) {
+        service.deleteEntry(id, authUtil.getCurrentUserId());
     }
 }

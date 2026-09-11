@@ -10,6 +10,7 @@ import org.example.master_be.Repository.HydrationEntryRepository;
 import org.example.master_be.Repository.UserRepository;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
 
 import java.time.LocalDate;
@@ -62,6 +63,13 @@ public class HydrationService {
         LocalDate to = LocalDate.now().plusDays(1);
         LocalDate from = to.minusMonths(1);
         return summarize(userId, from, to, java.time.temporal.ChronoUnit.DAYS.between(from, to));
+    }
+
+    @Transactional
+    public void deleteEntry(Long entryId, Long userId) {
+        HydrationEntry entry = hydrationRepo.findByIdAndUserId(entryId, userId)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Water entry not found"));
+        hydrationRepo.delete(entry);
     }
 
     private HydrationSummaryResponse summarize(Long userId, LocalDate from, LocalDate toExclusive, long days) {

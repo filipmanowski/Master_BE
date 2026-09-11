@@ -15,6 +15,7 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.temporal.TemporalAdjusters;
 import java.util.Comparator;
+import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -50,7 +51,7 @@ public class DashboardService {
         response.setWorkoutsThisMonth(countCurrentMonth(userId));
         response.setTotalTrainingTimeMinutes(calculateTrainingMinutes(sessions));
         response.setTotalLiftedWeight(performedExercises.stream().mapToDouble(this::calculateVolume).sum());
-        response.setAverageTrainingVolume(calculateAverageTrainingVolume(performedExercises, sessions.size()));
+        response.setAverageTrainingVolume(calculateAverageTrainingVolume(performedExercises));
         response.setMostFrequentExercises(getMostFrequentExercises(performedExercises));
         response.setMostFrequentMuscleGroups(List.of());
         return response;
@@ -59,20 +60,20 @@ public class DashboardService {
     private long countCurrentWeek(Long userId) {
         LocalDate now = LocalDate.now();
         LocalDate weekStart = now.with(TemporalAdjusters.previousOrSame(DayOfWeek.MONDAY));
-        return sessionRepo.findByUserIdAndStartedAtGreaterThanEqualAndStartedAtLessThan(
+        return performedExerciseRepo.countDistinctCompletedSessionsByUserIdAndStartedAtBetween(
                 userId,
                 weekStart.atStartOfDay(),
                 weekStart.plusDays(7).atStartOfDay()
-        ).size();
+        );
     }
 
     private long countCurrentMonth(Long userId) {
         LocalDate monthStart = LocalDate.now().withDayOfMonth(1);
-        return sessionRepo.findByUserIdAndStartedAtGreaterThanEqualAndStartedAtLessThan(
+        return performedExerciseRepo.countDistinctCompletedSessionsByUserIdAndStartedAtBetween(
                 userId,
                 monthStart.atStartOfDay(),
                 monthStart.plusMonths(1).atStartOfDay()
-        ).size();
+        );
     }
 
     private long calculateTrainingMinutes(List<WorkoutSession> sessions) {
@@ -82,7 +83,11 @@ public class DashboardService {
                 .sum();
     }
 
-    private double calculateAverageTrainingVolume(List<PerformedExercise> performedExercises, int sessionCount) {
+    private double calculateAverageTrainingVolume(List<PerformedExercise> performedExercises) {
+        int sessionCount = performedExercises.stream()
+                .map(pe -> pe.getSession().getId())
+                .collect(java.util.stream.Collectors.toCollection(HashSet::new))
+                .size();
         if (sessionCount == 0) {
             return 0.0;
         }

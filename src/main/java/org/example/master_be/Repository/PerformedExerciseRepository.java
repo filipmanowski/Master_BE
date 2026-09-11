@@ -40,4 +40,29 @@ public interface PerformedExerciseRepository extends JpaRepository<PerformedExer
             @Param("from") LocalDateTime from,
             @Param("to") LocalDateTime to
     );
+
+    @Query("""
+            select pe from PerformedExercise pe
+            join fetch pe.session s
+            left join fetch s.plan p
+            join fetch pe.exercise e
+            where s.user.id = :userId
+              and pe.completed = true
+            order by s.startedAt desc, pe.id desc
+            """)
+    List<PerformedExercise> findCompletedHistoryByUserId(@Param("userId") Long userId);
+
+    @Query("""
+            select count(distinct s.id) from PerformedExercise pe
+            join pe.session s
+            where s.user.id = :userId
+              and pe.completed = true
+              and s.startedAt >= :from
+              and s.startedAt < :to
+            """)
+    long countDistinctCompletedSessionsByUserIdAndStartedAtBetween(
+            @Param("userId") Long userId,
+            @Param("from") LocalDateTime from,
+            @Param("to") LocalDateTime to
+    );
 }

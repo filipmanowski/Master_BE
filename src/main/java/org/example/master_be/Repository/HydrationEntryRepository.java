@@ -5,6 +5,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Optional;
 
 public interface HydrationEntryRepository extends JpaRepository<HydrationEntry, Long> {
     List<HydrationEntry> findByUserIdOrderByDrankAtDesc(Long userId);
@@ -14,4 +15,6 @@ public interface HydrationEntryRepository extends JpaRepository<HydrationEntry, 
             LocalDateTime from,
             LocalDateTime to
     );
+
+    Optional<HydrationEntry> findByIdAndUserId(Long id, Long userId);
 }

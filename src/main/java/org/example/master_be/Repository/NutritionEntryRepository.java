@@ -18,4 +18,6 @@ public interface NutritionEntryRepository extends JpaRepository<NutritionEntry, 
 
     Optional<NutritionEntry> findById(Long id);
 
+    Optional<NutritionEntry> findByIdAndUserId(Long id, Long userId);
+
 }
